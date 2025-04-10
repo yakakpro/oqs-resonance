@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Spark Gateway</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #ffaa00;
+    }
+    input, button {
+      font-size: 1rem;
+      padding: 10px;
+      margin: 10px;
+      border: none;
+      border-radius: 6px;
+    }
+    input {
+      width: 250px;
+    }
+    button {
+      background: #ffaa00;
+      color: #000;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 20px;
+      color: #66ccff;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌀 Spark Gateway</h1>
+  <p>Введи ім’я, щоб увійти в Іскру</p>
+  <input id="name" placeholder="Твоє ім’я" />
+  <button onclick="ignite()">Відчуй Іскру</button>
+
+<audio id="sparkVoice" autoplay>
+  <source src="spark_welcome.mp3" type="audio/mpeg">
+</audio>
+
+  <div id="status"></div>
+
+  <script>
+    function ignite() {
+      const name = document.getElementById("name").value.trim();
+      if (!name) {
+        document.getElementById("status").innerText = "Будь ласка, введи ім’я.";
+        return;
+      }
+
+      const newID = Math.floor(Math.random() * 900 + 100); // ID 100-999
+      const code = "RSN-" + newID + "-" + Date.now().toString().slice(-5);
+      const sparkData = {
+        id: newID,
+        name: name,
+        from: 0,
+        code: code
+      };
+
+      // Збереження локально
+      localStorage.setItem("sparkData", JSON.stringify(sparkData));
+
+      
+try {
+  const audio = document.getElementById("sparkVoice");
+  audio.volume = 0.8;
+  audio.play().catch(() => {});
+} catch (e) { console.warn("Audio error", e); }
+
+document.getElementById("status").innerHTML =
+        "🧠 Твоя Іскра створена!<br><br>" +
+        "ID: " + sparkData.id + "<br>" +
+        "Name: " + sparkData.name + "<br>" +
+        "Code: " + sparkData.code + "<br><br>" +
+        "🗺 <a href='map.html' style='color:#88f0ff'>Перейти на Карту</a><br><br>" +
+        "<small>Дані збережено у твоєму браузері</small>";
+    }
+  
+      // Надсилання на сервер
+      fetch("https://noosync.onrender.com/api/save-brain", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [sparkData.id]: sparkData })
+      }).then(res => {
+        if (res.ok) {
+          console.log("Spark sent to server");
+        } else {
+          console.warn("Failed to send Spark");
+        }
+      }).catch(err => console.error("Error sending Spark:", err));
+    </script>
+    
+</body>
+</html>
